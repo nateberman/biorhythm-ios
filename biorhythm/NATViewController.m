@@ -281,7 +281,7 @@
 // then showIndicators and updateBiorhythmImages
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection {
     NSLog(@"connectionDidFinishLoading");
-    NSLog(@"Succeeded! Received %d bytes of data",[_responseData length]);
+   // NSLog(@"Succeeded! Received %d bytes of data",[_responseData length]);
     
     // convert to JSON and store
     NSError *myError = nil;
@@ -314,19 +314,41 @@
         
         if ([keyAsString  isEqual: @"intellectual"]) {
             _intelScore = [valueAsString floatValue];
-            [_intelBtn setBackgroundImage:[self imageForNumber:_intelScore] forState:UIControlStateNormal];
-            _intelLabel.text =[NSString stringWithFormat:@"%.2f", _intelScore * 100 ];
+            NSLog(@"intelScore: %f", _intelScore);
+            //[_intelBtn setBackgroundImage:[self imageForNumber:_intelScore] forState:UIControlStateNormal];
+            [_intelBtn performSelector:@selector(setBackgroundColor:) withObject:[self colorForScore:_intelScore] afterDelay:0.1];
+            //[_intelBtn setBackgroundColor:[self colorForScore:_intelScore]];
+            [self setLabel:_intelLabel forScore:_intelScore];
         }
         else if ([keyAsString isEqual:@"physical"]) {
             _physicalScore = [valueAsString floatValue];
-            [_physicalBtn setBackgroundImage:[self imageForNumber:_physicalScore] forState:UIControlStateNormal];
-            _physicalLabel.text = [NSString stringWithFormat:@"%.2f", _physicalScore * 100];
+            NSLog(@"physicalScore: %f", _physicalScore);
+            //[_physicalBtn setBackgroundImage:[self imageForNumber:_physicalScore] forState:UIControlStateNormal];
+            //[_physicalBtn setBackgroundColor:[self colorForScore:_intelScore]];
+            [_physicalBtn performSelector:@selector(setBackgroundColor:) withObject:[self colorForScore:_physicalScore] afterDelay:0.1];
+            [self setLabel:_physicalLabel forScore:_physicalScore];
         }
         else if ([keyAsString isEqual:@"emotional"]) {
             _emotionalScore = [valueAsString floatValue];
-            [_emotionalBtn setBackgroundImage:[self imageForNumber:_emotionalScore] forState:UIControlStateNormal];
-            _emotionalLabel.text = [NSString stringWithFormat:@"%.2f", _emotionalScore * 100];
+            NSLog(@"emotionalScore: %f", _emotionalScore);
+            //[_emotionalBtn setBackgroundImage:[self imageForNumber:_emotionalScore] forState:UIControlStateNormal];
+            //[_emotionalBtn setBackgroundColor:[self colorForScore:_emotionalScore]];
+            [_emotionalBtn performSelector:@selector(setBackgroundColor:) withObject:[self colorForScore:_emotionalScore] afterDelay:0.1];
+            [self setLabel:_emotionalLabel forScore:_emotionalScore];
         }
+    }
+}
+
+// format a label's text with a score
+- (void) setLabel:(UILabel*)label forScore:(float)score {
+    if (score < 0.0001 && score > -0.0001) {
+        label.text = @"0";
+    }
+    else if (score == 1) {
+        label.text = @"100";
+    }
+    else {
+        label.text = [NSString stringWithFormat:@"%.2f", score * 100];
     }
 }
 
@@ -343,6 +365,66 @@
      }
     NSLog(@"greenColor returned");
     return [UIImage imageNamed:@"greenpad_102x102.png"];
+}
+
+// return a unique color based on biorhythm score
+- (UIColor *)colorForScore:(float)score {
+    
+    float number = score;
+    
+    NSLog(@"creating color for score: %f", score);
+    
+    UIColor *finalColor = [[UIColor alloc]init];
+    
+    // red - higher score darker brightness
+    if (score < 0){
+        
+        // lighten
+        number = 1-score;
+        finalColor = [UIColor colorWithHue:.99 saturation:1 brightness:number alpha:1];
+        
+        if (score < -.5) {
+            number = (1-(-score)+.1);
+            // darken
+            finalColor = [UIColor colorWithHue:.99 saturation:1 brightness:number alpha:1];
+        }
+        
+        // correction
+        if (score < .1) {
+            number += .1;
+        }
+        finalColor = [UIColor colorWithHue:0.99 saturation:1 brightness:number alpha:1];
+    }
+    
+    // green color
+    else if (score > 0) {
+        // lighten
+        if (score < .1) {
+            number = score + .1;
+        }
+        finalColor = [UIColor colorWithHue:0.3 saturation:1 brightness:number alpha:1];
+    }
+    
+    // mid color (yellow?)
+    if (score > -0.000001 && score < 0.000001) {
+        finalColor = [UIColor colorWithHue:0.2 saturation:1 brightness:1 alpha:1];
+    }
+    
+    
+    NSLog(@"score %f changed to number %f", score, number);
+    return finalColor;
+}
+
+- (void)drawCircleInRect:(CGRect)rect withColor:(UIColor*)color
+{
+    CGRect borderRect = CGRectInset(rect, 5, 5);
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    CGContextSetRGBStrokeColor(context, 1.0, 1.0, 1.0, 1.0);
+    CGContextSetRGBFillColor(context, , <#CGFloat green#>, <#CGFloat blue#>, <#CGFloat alpha#>)
+    CGContextSetLineWidth(context, 5.0);
+    CGContextFillEllipseInRect (context, borderRect);
+    CGContextStrokeEllipseInRect(context, borderRect);
+    CGContextFillPath(context);
 }
 
 
@@ -505,7 +587,7 @@
 // animate bottom button on to view
 - (void)showBottomBtn {
     
-    NSLog(@"datepicker visible: %hhd", _datepickerVisible);
+   // NSLog(@"datepicker visible: %hhd", _datepickerVisible);
     
     // set bottom button
     if (_datepickerVisible == 1) {
